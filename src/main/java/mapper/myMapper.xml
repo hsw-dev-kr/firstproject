@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.myMapper">
+
+<select id="getWriting" parameterType="model.Condition" resultType="model.Writing">
+	select * from
+	(select a.*, rownum rn from
+		(select * from writing_info order by group_id desc, order_no asc)a
+	)
+	where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="selectImageCount" resultType="Integer">
+	select count(*) from writing_info
+</select>
+
+<insert id="insertWriting" parameterType="model.Writing">
+	insert into writing_info values(#{writing_id},
+	#{group_id},#{order_no},#{parent_id},#{register_date},
+	#{writer_name},#{email},#{image_name},#{password},
+	#{title},#{content})
+</insert>
+
+<update id="updateOrderNoReply" parameterType="model.Writing">
+update writing_info set order_no=order_no + 1
+where group_id=#{group_id} and order_no >= #{order_no}
+</update>
+<select id="selectMaxGroupId" resultType="Integer">
+	select max(group_id) max_id from writing_info
+</select>
+<select id="getMaxWritingId" resultType="Integer">
+	select max(writing_id) from writing_info
+</select>
+
+<select id="getIdCartList" parameterType="String" resultType="model.CartItem">
+	select cart.code code, cart.num num, user_item.price price, user_item.name name
+	from cart cart, user_item user_item
+	where cart.code = user_item.code and cart.id = #{id}
+</select>
+<delete id="deleteCart" parameterType="model.CartItem">
+	delete from cart where code=#{code} and id=#{id}
+</delete>
+<update id="updateCart" parameterType="model.CartItem">
+	update cart set num=#{num}
+	where code=#{code} and id=#{id}
+</update>
+<insert id="insertCart" parameterType="model.CartItem">
+	insert into cart values(#{seqno},#{code},#{num},#{id})
+</insert>
+<select id="getMaxCartSeqno" resultType="Integer">
+	select max(seqno) max_seqno from cart
+</select>
+
+<select id="getItem" parameterType="String" resultType="model.Item">
+	select * from user_item where code=#{code}
+</select>
+<select id="getItemList" parameterType="model.Condition" resultType="model.Item">
+	select * from
+	(select a.*, rownum rn from
+			(select * from user_item order by code desc)a
+	)where rn between #{startRow} and #{endRow}
+</select>
+<select id="getItemCount" resultType="Integer">
+	select count(*) as cnt from user_item
+</select>
+
+<insert id="putItem" parameterType="model.Item">
+	insert into user_item values(#{code},#{name},#{price},#{info},#{origin})
+</insert>
+
+<select id="getDetailBbs" parameterType="Integer" resultType="model.Bbs">
+	select seqno,title,id,content,bbs_date from bbs where seqno=#{seqno}
+</select>
+<select id="readBbsList" resultType="model.Bbs" parameterType="model.Condition">
+	select seqno,title,id,content,bbs_date from
+	(	
+		select a.*, rownum rn from
+		(
+			(select * from bbs order by seqno desc)a
+		)
+	)where rn between #{startRow} and #{endRow}
+</select>
+<select id="bbsCount" resultType="Integer">
+	select count(*) as cnt from bbs
+</select>
+<select id="getMaxSeqno" resultType="Integer">
+	select max(seqno) as seqno from bbs
+</select>
+<insert id="putBbs" parameterType="model.Bbs">
+	insert into bbs(seqno,title,content,id,bbs_date)
+	values(#{seqno},#{title},#{content},#{id},#{bbs_date})
+</insert>
+<select id="getPwd" parameterType="String" resultType="String">
+	select password from user_account where user_id=#{user_id}
+</select>
+</mapper>
+
+
+
+
+
+
